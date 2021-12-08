@@ -7,29 +7,29 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
-
-type ServerConfig struct {
-	CCID    string
-	Address string
-}
 
 // SmartContract provides functions for managing a car
 type SmartContract struct {
 	contractapi.Contract
 }
 
-// Car describes basic details of what makes up a car
-type Car struct {
-	Make   string `json:"make"`
+// Basic definition for chat schema
+type ChatSchema struct {
+	Id     string `json:"id"`
 	Model  string `json:"model"`
 	Colour string `json:"colour"`
 	Owner  string `json:"owner"`
+}
+
+// A single chat element
+type Chat struct {
+	From      string `json:"from"`
+	Message   string `json:"message"`
+	Timestamp string `json:"timestamp"`
 }
 
 // QueryResult structure used for handling result of query
@@ -144,11 +144,6 @@ func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterfa
 }
 
 func main() {
-	// See chaincode.env.example
-	config := ServerConfig{
-		CCID:    os.Getenv("CHAINCODE_ID"),
-		Address: os.Getenv("CHAINCODE_SERVER_ADDRESS"),
-	}
 
 	chaincode, err := contractapi.NewChaincode(new(SmartContract))
 
@@ -157,16 +152,7 @@ func main() {
 		return
 	}
 
-	server := &shim.ChaincodeServer{
-		CCID:    config.CCID,
-		Address: config.Address,
-		CC:      chaincode,
-		TLSProps: shim.TLSProperties{
-			Disabled: true,
-		},
-	}
-
-	if err := server.Start(); err != nil {
+	if err := chaincode.Start(); err != nil {
 		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
 	}
 }
