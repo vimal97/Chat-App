@@ -1,6 +1,11 @@
+
+
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+
+# Generated pdf files
+*.pdf
 
 # Logs
 logs
