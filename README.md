@@ -1,2 +1,2 @@
 # Chat-App
-CHating application on Hyperledger Fabric
+Chating application on Hyperledger Fabric
