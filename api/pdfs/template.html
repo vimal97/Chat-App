@@ -5,15 +5,15 @@
     <title>List of all chats's</title>
   </head>
   <body>
-    <!-- {{#each chats}} -->
-    <h1>Chat Id: {{chats}}</h1>
-    <h1>{{this.Record}}</h1>
-    <ul>
+    <h4>All Chats</h4>
+    {{#each chats}}
+    <h5>Chat Id: <span style="color: lightcoral;">{{ this.key }}</span></h5>
+    <ul style="font-size: 10px;">
       {{#each this.Record.chat}}
       <li>Name: {{this.from}}</li>
       <li>Message: {{this.message}}</li>
       <li>TimeStamp: {{this.timeStamp}}</li>
-      <br />
+      <hr />
       {{/each}}
     </ul>
     {{/each}}

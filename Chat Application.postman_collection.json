@@ -1,0 +1,259 @@
+{
+	"info": {
+		"_postman_id": "59296071-f744-4274-83a0-9e1361d48f10",
+		"name": "Chat Application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Enroll Admin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/enrollAdmin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"enrollAdmin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Enroll User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Vimal\",\n    \"orgName\": \"Org1\" \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/enrollUser",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"enrollUser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Init Ledger",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Vimal\",\n    \"channelName\": \"mychannel\",\n    \"chaincodeName\": \"chat-app\",\n    \"functionName\": \"InitLedger\",\n    \"args\": []\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/invoke",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"invoke"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a chat",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Vimal\",\n    \"channelName\": \"mychannel\",\n    \"chaincodeName\": \"chat-app\",\n    \"functionName\": \"CreateChat\",\n    \"args\": [\"chat2\", \"client2@gmail.com\", \"broker2@gmail.com\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/invoke",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"invoke"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Chat",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Vimal\",\n    \"channelName\": \"mychannel\",\n    \"chaincodeName\": \"chat-app\",\n    \"functionName\": \"UpdateChat\",\n    \"args\": [\"chat2\", \"broker2@gmail.com\", \"Hi\", \"Fri Dec 10 2021 00:17:51\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/invoke",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"invoke"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query a chat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Vimal\",\n    \"channelName\": \"mychannel\",\n    \"chaincodeName\": \"chat-app\",\n    \"functionName\": \"QueryChat\",\n    \"args\": [\"chat2\", \"broker2@gmail.com\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/query",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"query"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query all chats",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"Vimal\",\n    \"channelName\": \"mychannel\",\n    \"chaincodeName\": \"chat-app\",\n    \"functionName\": \"QueryAllChats\",\n    \"args\": [\"admin@gmail.com\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/query",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"query"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download all chats by Admin",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userName\": \"admin\",\n    \"channelName\": \"mychannel\",\n    \"chaincodeName\": \"fabcar\",\n    \"args\": [\n        \"admin@gmail.com\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/downloadChats?userName=admin&channelName=mychannel&chaincodeName=chat-app",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"downloadChats"
+					],
+					"query": [
+						{
+							"key": "userName",
+							"value": "admin"
+						},
+						{
+							"key": "channelName",
+							"value": "mychannel"
+						},
+						{
+							"key": "chaincodeName",
+							"value": "chat-app"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

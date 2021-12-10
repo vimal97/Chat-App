@@ -10,18 +10,17 @@ const admin = require("./enrollAdmin")
 const user = require("./registerUser")
 const invoke = require("./invoke")
 const query = require("./query")
-// const pdf = require("pdfkit")
 var pdf = require("pdf-creator-node");
 const fs = require("fs")
 
-// endpoint for enrolling admin - this is called once
+// endpoint for enrolling Admin - this is called once
 app.post('/enrollAdmin', async (req, res) => {
   console.log("\n - Enrolling admin")
   var result = await admin.enrollAdmin()
   res.send(result)
 })
 
-// endpoint for registering normal user
+// endpoint for registering Broker and Client
 app.post('/enrollUser', async (req, res) => {
   console.log("\n - Enrolling user")
   var userName = req.body.userName
@@ -30,7 +29,7 @@ app.post('/enrollUser', async (req, res) => {
   res.send(result)
 })
 
-// endpoint for invoking transactions
+// endpoint for invoking all transactions - CreateChat and UpdateChat
 app.post('/invoke', async (req, res) => {
   console.log("\n - Invoke triggered")
   var userName = req.body.userName
@@ -42,7 +41,7 @@ app.post('/invoke', async (req, res) => {
   res.send(result)
 })
 
-// endpoint for querying data from blockchain
+// endpoint for querying data from blockchain - QueryAllChats, QueryChat
 app.post('/query', async (req, res) => {
   console.log("\n - Query operation")
   var userName = req.body.userName
@@ -64,52 +63,30 @@ app.get('/downloadChats', async (req, res) => {
   var args = ["admin@gmail.com"]
   var result = await query.queryChaincode(userName, channelName, chaincodeName, functionName, args)
   if(result.success == true){
-    // const doc = new pdf.PDFDocument();
-    // var datetime = new Date();
-    // datetime = datetime.toISOString().slice(0,10)
-    // doc.pipe(fs.createWriteStream(`./pdfs/${datetime}.pdf`))
-    // doc.font("Helvetica")
-    //    .fontSize(12)
-    //    .text(JSON.stringify(JSON.parse(result.data), null, 4), 20, 20)
-    // doc.end()
-    // res.download(`./pdfs/Resume.pdf`)
-
     var html = fs.readFileSync("./pdfs/template.html", "utf8");
     var options = {
-      format: "A3",
+      format: "A4",
       orientation: "portrait",
-      border: "10mm",
-      header: {
-          height: "45mm",
-          contents: '<div style="text-align: center;">Author: Shyam Hajare</div>'
-      },
-      footer: {
-          height: "28mm",
-          contents: {
-              first: 'Cover page',
-              2: 'Second page', // Any page number is working. 1-based index
-              default: '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
-              last: 'Last Page'
-          }
-      }
-    };
-    console.log("test ---", result.data)
+      border: "10mm"
+    }
+    var datetime = new Date();
+    datetime = datetime.toISOString().slice(0,10)
     var document = {
       html: html,
       data: {
-        chats: JSON.stringify(result.data),
+        chats: JSON.parse(result.data),
       },
-      path: "./pdfs/output.pdf",
+      path: `./pdfs/${datetime}.pdf`,
       type: "",
     };
-    pdf.create(document, options)
+    await pdf.create(document, options)
         .then((res) => {
           console.log(res);
         })
         .catch((error) => {
           console.error(error);
         });
-        res.download(`./pdfs/output.pdf`)
+        res.download(`./pdfs/${datetime}.pdf`)
 
   } else {
     res.send(result.message)
@@ -117,5 +94,5 @@ app.get('/downloadChats', async (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Chating app listening at http://localhost:${port}`)
+  console.log(`**********************************************\nChating app listening at http://localhost:${port}\n\n**********************************************\n`)
 })
