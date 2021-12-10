@@ -12,50 +12,41 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-// SmartContract provides functions for managing a car
+// SmartContract provides functions for managing chats
 type SmartContract struct {
 	contractapi.Contract
 }
 
 // Basic definition for chat schema
 type ChatSchema struct {
-	Id     string `json:"id"`
-	Model  string `json:"model"`
-	Colour string `json:"colour"`
-	Owner  string `json:"owner"`
+	DocType			string 		`json:"docType"`
+	Participants  	[]string 	`json:"participants"`
+	Chat			[]Chat 		`json:"chat"`
 }
 
 // A single chat element
 type Chat struct {
 	From      string `json:"from"`
 	Message   string `json:"message"`
-	Timestamp string `json:"timestamp"`
+	TimeStamp string `json:"timeStamp"`
 }
 
 // QueryResult structure used for handling result of query
 type QueryResult struct {
-	Key    string `json:"Key"`
-	Record *Car
+	Key    string `json:"key"`
+	Record *ChatSchema
 }
 
-// InitLedger adds a base set of cars to the ledger
+// InitLedger adds a base set of chats to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	cars := []Car{
-		Car{Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko"},
-		Car{Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad"},
-		Car{Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo"},
-		Car{Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max"},
-		Car{Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana"},
-		Car{Make: "Peugeot", Model: "205", Colour: "purple", Owner: "Michel"},
-		Car{Make: "Chery", Model: "S22L", Colour: "white", Owner: "Aarav"},
-		Car{Make: "Fiat", Model: "Punto", Colour: "violet", Owner: "Pari"},
-		Car{Make: "Tata", Model: "Nano", Colour: "indigo", Owner: "Valeria"},
-		Car{Make: "Holden", Model: "Barina", Colour: "brown", Owner: "Shotaro"},
+	Chats := []ChatSchema{
+		ChatSchema{DocType: "Chat", Participants: []string{"user1@gmail.com", "user2@gmail.com"}, Chat: []Chat{}},
+		ChatSchema{DocType: "Chat", Participants: []string{"user1@gmail.com", "user3@gmail.com"}, Chat: []Chat{}},
 	}
 
-	for i, car := range cars {
-		carAsBytes, _ := json.Marshal(car)
-		err := ctx.GetStub().PutState("CAR"+strconv.Itoa(i), carAsBytes)
+	for i, chat := range Chats {
+		chatAsBytes, _ := json.Marshal(chat)
+		err := ctx.GetStub().PutState("chat"+strconv.Itoa(i), chatAsBytes)
 
 		if err != nil {
 			return fmt.Errorf("Failed to put to world state. %s", err.Error())
@@ -65,40 +56,90 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
-// CreateCar adds a new car to the world state with given details
-func (s *SmartContract) CreateCar(ctx contractapi.TransactionContextInterface, carNumber string, make string, model string, colour string, owner string) error {
-	car := Car{
-		Make:   make,
-		Model:  model,
-		Colour: colour,
-		Owner:  owner,
+// CreateChat creates a chat schema on world state
+func (s *SmartContract) CreateChat(ctx contractapi.TransactionContextInterface, chatId string, client string, broker string) (string, error) {
+
+	if chatId == "" {
+		return "", fmt.Errorf("Chat Id cannot be empty.")
+	}
+	if client == "" {
+		return "", fmt.Errorf("Client field cannot be empty.")
+	}
+	if broker == "" {
+		return "", fmt.Errorf("Broker field cannot be empty.")
 	}
 
-	carAsBytes, _ := json.Marshal(car)
-
-	return ctx.GetStub().PutState(carNumber, carAsBytes)
-}
-
-// QueryCar returns the car stored in the world state with given id
-func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, carNumber string) (*Car, error) {
-	carAsBytes, err := ctx.GetStub().GetState(carNumber)
-
+	chatAsBytes, err := ctx.GetStub().GetState(chatId)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+		return "", fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
-	if carAsBytes == nil {
-		return nil, fmt.Errorf("%s does not exist", carNumber)
+	if chatAsBytes == nil { // Chat doesnt exist so we can create one
+		newChat := ChatSchema{DocType: "Chat", Participants: []string{client, broker}, Chat: []Chat{}}
+		newChatAsBytes, _ := json.Marshal(newChat)
+		err := ctx.GetStub().PutState(chatId, newChatAsBytes)
+
+		if err != nil {
+			return "", fmt.Errorf("Failed writing to world state. %s", err.Error())
+		}
+		return "Successfully created chat", nil
+
+	} else {                // Chat already exist so throw error
+		return "", fmt.Errorf("Failed to create chat schema, chat already exists.")
+
 	}
 
-	car := new(Car)
-	_ = json.Unmarshal(carAsBytes, car)
-
-	return car, nil
 }
 
-// QueryAllCars returns all cars found in world state
-func (s *SmartContract) QueryAllCars(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
+// UpdateChat updates the exixting chat by adding the new message
+func (s *SmartContract) UpdateChat(ctx contractapi.TransactionContextInterface, chatId string, from string, message string, timeStamp string) (string, error) {
+
+	if chatId == "" {
+		return "", fmt.Errorf("Chat Id cannot be empty.")
+	}
+	if from == "" {
+		return "", fmt.Errorf("From field cannot be empty.")
+	}
+	if message == "" {
+		return "", fmt.Errorf("Message field cannot be empty.")
+	}
+	if timeStamp == "" {
+		return "", fmt.Errorf("TimeStamp field cannot be empty.")
+	}
+
+	chatAsBytes, err := ctx.GetStub().GetState(chatId)
+	if err != nil {
+		return "", fmt.Errorf("Failed to read from world state. %s", err.Error())
+	}
+
+	if chatAsBytes == nil {
+		return "", fmt.Errorf("%s does not exist", chatId)
+
+	} else {
+		chat := new(ChatSchema)
+		_ = json.Unmarshal(chatAsBytes, chat)
+		if err != nil {
+			return "", err
+		}
+		chat.Chat = append(chat.Chat, Chat{From: from, Message: message, TimeStamp: timeStamp})
+		chatAsBytes, _ := json.Marshal(chat)
+		err := ctx.GetStub().PutState(chatId, chatAsBytes)
+
+		if err != nil {
+			return "", fmt.Errorf("Failed to write the update to world state. %s", err.Error())
+		}
+		return "Successfully updated the chat.", nil
+
+	}
+}
+
+// QueryAllChats returns all the chats stored in the world state - only admin is permitted to do the same
+func (s *SmartContract) QueryAllChats(ctx contractapi.TransactionContextInterface, userEmail string) ([]QueryResult, error) {
+	
+	if userEmail != "admin@gmail.com" {
+		return nil, fmt.Errorf("You are not permitted to do this operation.")
+	}
+
 	startKey := ""
 	endKey := ""
 
@@ -118,29 +159,56 @@ func (s *SmartContract) QueryAllCars(ctx contractapi.TransactionContextInterface
 			return nil, err
 		}
 
-		car := new(Car)
-		_ = json.Unmarshal(queryResponse.Value, car)
+		chat := new(ChatSchema)
+		_ = json.Unmarshal(queryResponse.Value, chat)
 
-		queryResult := QueryResult{Key: queryResponse.Key, Record: car}
+		queryResult := QueryResult{Key: queryResponse.Key, Record: chat}
 		results = append(results, queryResult)
+		
 	}
 
 	return results, nil
+
 }
 
-// ChangeCarOwner updates the owner field of car with given id in world state
-func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterface, carNumber string, newOwner string) error {
-	car, err := s.QueryCar(ctx, carNumber)
+// QueryChat returns the chat stored in the world state with given id
+func (s *SmartContract) QueryChat(ctx contractapi.TransactionContextInterface, chatId string, userEmail string) (*ChatSchema, error) {
+	
+	if chatId == "" {
+		return nil, fmt.Errorf("Chat Id cannot be empty.")
+	}
+	if userEmail == "" {
+		return nil, fmt.Errorf("User email field cannot be empty.")
+	}
+	
+	chatAsBytes, err := ctx.GetStub().GetState(chatId)
 
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
-	car.Owner = newOwner
+	if chatAsBytes == nil {
+		return nil, fmt.Errorf("%s does not exist", chatId)
+	}
 
-	carAsBytes, _ := json.Marshal(car)
+	chat := new(ChatSchema)
+	_ = json.Unmarshal(chatAsBytes, chat)
 
-	return ctx.GetStub().PutState(carNumber, carAsBytes)
+	result := false
+	for _, user := range chat.Participants {
+        if user == userEmail {
+            result = true
+            break
+        }
+    }
+	if result {
+		return chat, nil
+
+	} else {
+		return nil, fmt.Errorf("You dont have access to this chat.")
+	}
+
+	
 }
 
 func main() {

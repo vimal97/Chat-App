@@ -1,4 +1,5 @@
 const { request } = require('express')
+const http = require("http")
 const express = require('express')
 const app = express()
 var bodyParser = require('body-parser');
@@ -9,6 +10,9 @@ const admin = require("./enrollAdmin")
 const user = require("./registerUser")
 const invoke = require("./invoke")
 const query = require("./query")
+// const pdf = require("pdfkit")
+var pdf = require("pdf-creator-node");
+const fs = require("fs")
 
 // endpoint for enrolling admin - this is called once
 app.post('/enrollAdmin', async (req, res) => {
@@ -48,6 +52,68 @@ app.post('/query', async (req, res) => {
   var args = req.body.args
   var result = await query.queryChaincode(userName, channelName, chaincodeName, functionName, args)
   res.send(result)
+})
+
+// endpoint for downloading all the chats, only admin is allowed to perform this operations
+app.get('/downloadChats', async (req, res) => {
+  console.log("\n - Download chats by admin")
+  var userName = req.query.userName
+  var channelName = req.query.channelName
+  var chaincodeName = req.query.chaincodeName
+  var functionName = "QueryAllChats"
+  var args = ["admin@gmail.com"]
+  var result = await query.queryChaincode(userName, channelName, chaincodeName, functionName, args)
+  if(result.success == true){
+    // const doc = new pdf.PDFDocument();
+    // var datetime = new Date();
+    // datetime = datetime.toISOString().slice(0,10)
+    // doc.pipe(fs.createWriteStream(`./pdfs/${datetime}.pdf`))
+    // doc.font("Helvetica")
+    //    .fontSize(12)
+    //    .text(JSON.stringify(JSON.parse(result.data), null, 4), 20, 20)
+    // doc.end()
+    // res.download(`./pdfs/Resume.pdf`)
+
+    var html = fs.readFileSync("./pdfs/template.html", "utf8");
+    var options = {
+      format: "A3",
+      orientation: "portrait",
+      border: "10mm",
+      header: {
+          height: "45mm",
+          contents: '<div style="text-align: center;">Author: Shyam Hajare</div>'
+      },
+      footer: {
+          height: "28mm",
+          contents: {
+              first: 'Cover page',
+              2: 'Second page', // Any page number is working. 1-based index
+              default: '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+              last: 'Last Page'
+          }
+      }
+    };
+    console.log("test ---", result.data)
+    var document = {
+      html: html,
+      data: {
+        chats: JSON.stringify(result.data),
+      },
+      path: "./pdfs/output.pdf",
+      type: "",
+    };
+    pdf.create(document, options)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+        res.download(`./pdfs/output.pdf`)
+
+  } else {
+    res.send(result.message)
+  }
 })
 
 app.listen(port, () => {

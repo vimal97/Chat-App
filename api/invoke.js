@@ -45,7 +45,7 @@ async function invokeChaincode(userName, channelName, chaincodeName, functionNam
         // Disconnect from the gateway.
         await gateway.disconnect();
         
-        return {success: true, message: "Transaction has been submitted successfully", chaincodeResponse: `${JSON.stringify(result)}`}
+        return {success: true, message: "Transaction has been submitted successfully", chaincodeResponse: `${result.toString()}`}
 
     } catch (error) {
         console.error(`Failed to submit transaction: ${error}`);

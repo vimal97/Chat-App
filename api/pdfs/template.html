@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>List of all chats's</title>
+  </head>
+  <body>
+    <!-- {{#each chats}} -->
+    <h1>Chat Id: {{chats}}</h1>
+    <h1>{{this.Record}}</h1>
+    <ul>
+      {{#each this.Record.chat}}
+      <li>Name: {{this.from}}</li>
+      <li>Message: {{this.message}}</li>
+      <li>TimeStamp: {{this.timeStamp}}</li>
+      <br />
+      {{/each}}
+    </ul>
+    {{/each}}
+  </body>
+</html>
